@@ -23,14 +23,21 @@ Route::controller(AuthController::class)->group(function () {
     Route::post('register', 'register');
     Route::post('logout', 'logout');
     Route::post('refresh', 'refresh');
-
+    Route::get('usuarios', 'getUsers');
+    Route::get('user', 'getMyuser');
+    Route::get('usuarios/count', 'count');
 });
 
 // suscribirme
+Route::get('suscriptores', [SuscripcionController::class, 'index']);
+Route::get('suscriptores/count', [SuscripcionController::class, 'count']);
 Route::post('suscribirme', [SuscripcionController::class, 'store']);
+Route::get('suscriptor/{id}', [SuscripcionController::class, 'getbyID']);
+Route::put('suscriptor/{id}/editar', [SuscripcionController::class, 'editSus']);
 
 // Baja subcripciones
 Route::post('darse-de-baja/{email}', [BajaSuscripcionController::class, 'store']);
 Route::get('baja-suscriptores', [BajaSuscripcionController::class, 'index']);
+Route::get('baja-suscriptores/count', [BajaSuscripcionController::class, 'count']);
 
 

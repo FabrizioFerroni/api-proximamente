@@ -10,6 +10,8 @@ use App\Models\Suscripcion;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Validator;
+
 
 class SuscripcionController extends Controller
 {
@@ -18,17 +20,45 @@ class SuscripcionController extends Controller
         $this->middleware('auth:api', ['except' => ['store']]);
     }
 
-    // public function __construct(Request $request)
-    // {
-    //     $token = $request->header('Authorization');
-    //     if($token != '')
-    //         //En caso de que requiera autentifiación la ruta obtenemos el usuario y lo almacenamos en una variable, nosotros no lo utilizaremos.
-    //         $this->middleware('auth:api');
-    // }
-
     public function index()
     {
-        return SuscripcionResource::collection(Suscripcion::orderBy('id', 'DESC')->get());
+        return SuscripcionResource::collection(Suscripcion::orderBy('status', 'DESC')->get());
+        // return SuscripcionResource::collection(Suscripcion::withTrashed()->orderBy('status', "DESC")->get());
+
+    }
+
+
+    public function getbyID($id){
+         $sus = Suscripcion::find($id);
+        return response()->json([
+            "suscriptor" => $sus
+        ], 200);
+    }
+
+    public function editSus(Request $req, $id){
+
+        $validator = Validator::make($req->all(), [
+            'status' => 'required|max:1'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'El campo estado es obligatorio.',
+            ], 404);
+        }
+
+        $sus = Suscripcion::find($id);
+        $sus->status = $req->input('status');
+        if($sus->save()){
+            return response()->json([
+                'mensaje' => 'Se cambio el estado con éxito'
+            ], 200);
+        } else{
+            return response()->json([
+                'mensaje' => 'Hubo un error para cambiar el estado'
+            ], 400);
+        }
     }
 
     public function store(GuardarSubcripcionRequest $request)
@@ -66,6 +96,12 @@ class SuscripcionController extends Controller
     {
         $suscripcion->delete();
         return (new SuscripcionResource($suscripcion))->additional(['mensaje' => 'Subcriptor eliminado correctamente en la BD'])->response()->setStatusCode(202);
+    }
+
+    public function count(){
+        return response()->json([
+            "total" => count(Suscripcion::withTrashed()->get()),
+        ], 200);
     }
 
 }

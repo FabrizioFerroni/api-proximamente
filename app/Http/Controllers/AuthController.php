@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\UsuarioResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -17,45 +18,13 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        // $validator = $request->validate([
-        //     'email' => 'required|string|email',
-        //     'password' => 'required|string',
-        // ]);
-
-        // $rules = [
-        //     'email' => 'required|string|email',
-        //     'password' => 'required|string',
-        // ];
-
-        // $messages =[
-        //     'email.required' => 'Necesitas colocar un email valido',
-        //     'password.required' => 'Se necesita que ingreses una contraseña'
-        // ];
-
-
-        // $validator = Validator::make($request->all(), $rules, $messages);
-
-        // if ($validator->fails()) {
-        //     return response()->json([
-        //         'status' => 'error',
-        //         'message' => $validator->customMessages,
-        //     ], 401);
-        // }
 
         $validator = Validator::make($request->all(), [
             'email' => 'required|string|email|max:255',
             'password' => 'required'
         ]);
-        // if ($validator->fails()) {
-        //     // return response()->json($validator->errors());
-        //     return response()->json([
-        //         'status' => 'error',
-        //         'message' => $validator->errors(),
-        //     ], 401);
-        // }
 
         if ($validator->fails()) {
-            // return response()->json($validator->errors());
             return response()->json([
                 'status' => 'error',
                 'message' => 'El correo electrónico o la clave son obligatorios',
@@ -79,7 +48,7 @@ class AuthController extends Controller
             'mensaje' => 'Te has logueado con éxito',
             'user' => $user,
             'authorization' => [
-                'token' => $token,
+                'token' => $this->respondWithToken($token),
                 'type' => 'bearer',
             ]
         ]);
@@ -122,13 +91,44 @@ class AuthController extends Controller
 
     public function refresh()
     {
+        // return response()->json([
+        //     'status' => 'success',
+        //     'token' => Auth::refresh(),
+        //     'type' => 'bearer',
+        // ]);
+        return $this->respondWithToken(Auth::refresh());
+    }
+
+    protected function respondWithToken($token)
+    {
         return response()->json([
-            'status' => 'success',
-            'user' => Auth::user(),
-            'authorisation' => [
-                'token' => Auth::refresh(),
-                'type' => 'bearer',
-            ]
+            'token' => $token,
+            'token_type' => 'Bearer ',
+            'expires_in' => Auth::factory()->getTTL() * 60
         ]);
+    }
+
+
+    public function count()
+    {
+        return response()->json([
+            "total" => count(User::get()),
+        ], 200);
+    }
+
+
+    public function getUsers()
+    {
+        $user = UsuarioResource::collection(User::orderBy('id', 'DESC')->get());
+        return response()->json([
+            "usuarios" => $user,
+        ], 200);
+    }
+
+    public function getMyuser(){
+        $user = Auth::user();
+        return response()->json([
+            "usuario" => $user,
+        ], 200);
     }
 }

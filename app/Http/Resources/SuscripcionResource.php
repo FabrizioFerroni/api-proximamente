@@ -23,6 +23,8 @@ class SuscripcionResource extends JsonResource
             'fecha_subcripcion' => Str::of($this->fecha_sub)->title(),
             'fecha_creacion' => $this->created_at->format('d-m-y H:i:s'),
             'fecha_actualizacion' => $this->updated_at->format('d-m-y H:i:s'),
+            // 'fecha_baja' => $this->deleted_at->format('d-m-y H:i:s'),
+            'estado' => $this->status,
         ];
     }
     public function with($request){

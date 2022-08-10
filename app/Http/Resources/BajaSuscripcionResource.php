@@ -17,7 +17,7 @@ class BajaSuscripcionResource extends JsonResource
     {
         return [
             'id'=> $this->id,
-            'subscripcion_id' => $this->subscripcion_id,
+            'suscripcion_id' => $this->suscripcion_id,
             'nombre' => Str::of($this->nombre)->title(),
             'email' => Str::of($this->email)->lower(),
             'fecha_baja' => $this->fecha_baja,

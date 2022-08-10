@@ -52,6 +52,8 @@ class BajaSuscripcionController extends Controller
         Mail::to($sub->email)->send(new BajaSub($mail_data));
 
         if ($eliminado == 0) {
+            $sub->status = 0;
+            $sub->save();
             $sub->delete();
             $eliminado = 1;
         }
@@ -85,5 +87,12 @@ class BajaSuscripcionController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    public function count()
+    {
+        return response()->json([
+            "total" => count(BajaSuscripcion::get()),
+        ], 200);
     }
 }
