@@ -20,6 +20,11 @@
 </div>
 <p>Gracias por confiar en Fabrizio DEV</p>
 <p style="font-size: 13px">
-    Si no quiere recibir mas correos con los adelantos puede hacer <a href="http://localhost:4200/darse-de-baja/{{ $email }}" target="_blank" style="text-decoration: none; color:#FF3030; ">click aquí</a>
+    Si no quiere recibir mas correos con los adelantos puede hacer <a href="{{ $host }}darse-de-baja/{{ $email }}" target="_blank" style="text-decoration: none; color:#FF3030; ">click aquí</a>
 </p>
+
+
+<div style="text-align:center;">
+    <span style="text-align:center; font-size:12px; margin-top:100px;"> Te has suscripto desde <a href="{{ $url }}" style="text-decoration: none;"><span style="color: #FF3030;">{{ $url }}</span></a> el dia <span>{{ $fecha }}</span> a la hora <span>{{ $hora }}</span>
+</div>
 @endsection

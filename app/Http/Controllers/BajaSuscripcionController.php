@@ -21,12 +21,7 @@ class BajaSuscripcionController extends Controller
 
     public function index()
     {
-        return BajaSuscripcionResource::collection(BajaSuscripcion::orderBy('id', 'DESC')->get());
-    }
-
-    public function create()
-    {
-        //
+        return BajaSuscripcionResource::collection(BajaSuscripcion::orderBy('fecha_baja', 'DESC')->get());
     }
 
     public function store(GuardarBajaSuscripcionRequest $request, $email)
@@ -49,8 +44,6 @@ class BajaSuscripcionController extends Controller
             'fecha_baja' => $now->format('Y-m-d'),
         ];
 
-        Mail::to($sub->email)->send(new BajaSub($mail_data));
-
         if ($eliminado == 0) {
             $sub->status = 0;
             $sub->save();
@@ -66,27 +59,16 @@ class BajaSuscripcionController extends Controller
             'eliminado' => $eliminado
         ];
 
-        return (new BajaSuscripcionResource(BajaSuscripcion::create($datos)))->additional(['mensaje' => 'Siento mucho que te hayas arrepentido de recibir mis adelantos, no volvera a pasar']);
-    }
+        $nbaja = new BajaSuscripcionResource(BajaSuscripcion::create($datos));
 
-    public function show($id)
-    {
-        //
-    }
-
-    public function edit($id)
-    {
-        //
-    }
-
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    public function destroy($id)
-    {
-        //
+        if($nbaja){
+            Mail::to($sub->email)->send(new BajaSub($mail_data));
+            return ($nbaja)->additional(['mensaje' => 'Siento mucho que te hayas arrepentido de recibir mis adelantos, no volvera a pasar']);
+        } else{
+            return response()->json([
+                'mensaje' => 'Hubo un error al registrar tu baja'
+            ], 400);
+        }
     }
 
     public function count()

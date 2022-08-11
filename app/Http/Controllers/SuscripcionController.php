@@ -22,20 +22,21 @@ class SuscripcionController extends Controller
 
     public function index()
     {
-        return SuscripcionResource::collection(Suscripcion::orderBy('status', 'DESC')->get());
+        return SuscripcionResource::collection(Suscripcion::orderBy('status', 'DESC')->orderBy('fecha_sub', 'DESC')->get());
         // return SuscripcionResource::collection(Suscripcion::withTrashed()->orderBy('status', "DESC")->get());
 
     }
 
-
-    public function getbyID($id){
-         $sus = Suscripcion::find($id);
+    public function getbyID($id)
+    {
+        $sus = Suscripcion::find($id);
         return response()->json([
             "suscriptor" => $sus
         ], 200);
     }
 
-    public function editSus(Request $req, $id){
+    public function editSus(Request $req, $id)
+    {
 
         $validator = Validator::make($req->all(), [
             'status' => 'required|max:1'
@@ -50,11 +51,11 @@ class SuscripcionController extends Controller
 
         $sus = Suscripcion::find($id);
         $sus->status = $req->input('status');
-        if($sus->save()){
+        if ($sus->save()) {
             return response()->json([
                 'mensaje' => 'Se cambio el estado con éxito'
             ], 200);
-        } else{
+        } else {
             return response()->json([
                 'mensaje' => 'Hubo un error para cambiar el estado'
             ], 400);
@@ -68,40 +69,35 @@ class SuscripcionController extends Controller
         $mail_data = [
             'nombre' => $request->input('nombre'),
             'email' => $request->input('email'),
-            'fecha_sub' =>  $now->format('Y-m-d'),
+            'fecha_sub' =>  $now->format('d-m-Y'),
+            'host' => env('HOST_DNS'),
+            'url' => env('HOST_DNS'),
+            'fecha' => $now->format('d/m/Y', 'America/Argentina/Cordoba'),
+            'hora' => $now->format('H:i', 'America/Argentina/Cordoba'),
         ];
-
-        Mail::to($request->input('email'))->send(new SubWelcome($mail_data));
 
         $datos = [
             'nombre' => $request->input('nombre'),
             'email' => $request->input('email'),
             'fecha_sub' => $now->format('Y-m-d')
         ];
-        return (new SuscripcionResource(Suscripcion::create($datos)))->additional(['mensaje' => 'Te has suscrito con éxito a mi boletín de noticias']);
+
+        $nsub = new SuscripcionResource(Suscripcion::create($datos));
+
+        if ($nsub) {
+            Mail::to($request->input('email'))->send(new SubWelcome($mail_data));
+            return ($nsub)->additional(['mensaje' => 'Te has suscrito con éxito a mi boletín de noticias']);
+        } else {
+            return response()->json([
+                'mensaje' => 'Hubo un error al registrar tu suscripción'
+            ], 400);
+        }
     }
 
-    public function show(Suscripcion $suscripcion)
+    public function count()
     {
-        return (new SuscripcionResource($suscripcion))->additional(['mensaje' => 'Se ha encontrado un registro con el id buscado']);
-    }
-
-    public function update(ActualizarSuscripcionRequest $request, Suscripcion $suscripcion)
-    {
-        $suscripcion->update($request->all());
-        return (new SuscripcionResource($suscripcion))->additional(['mensaje' => 'Subcriptor actualizado correctamente en la BD'])->response()->setStatusCode(202);
-    }
-
-    public function destroy(Suscripcion $suscripcion)
-    {
-        $suscripcion->delete();
-        return (new SuscripcionResource($suscripcion))->additional(['mensaje' => 'Subcriptor eliminado correctamente en la BD'])->response()->setStatusCode(202);
-    }
-
-    public function count(){
         return response()->json([
             "total" => count(Suscripcion::withTrashed()->get()),
         ], 200);
     }
-
 }

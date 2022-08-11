@@ -16,9 +16,21 @@ class Cors
      */
     public function handle(Request $request, Closure $next)
     {
+        // Posibles url para conceder permisos de cors
+        $possibleOrigins = [
+            env('HOST_FRONT'),
+            env('HOST_ADMIN'),
+         ];
+
+         if (in_array($request->header('origin'), $possibleOrigins)) {
+            $origin = $request->header('origin');
+         } else {
+            $origin = env('HOST_DEFAULT');
+         }
+
         return $next($request)
         //Url a la que se le dará acceso en las peticiones
-       ->header("Access-Control-Allow-Origin", "http://localhost:4200")
+       ->header("Access-Control-Allow-Origin", $origin)
        //Métodos que a los que se da acceso
        ->header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE")
        //Headers de la petición
